@@ -3,66 +3,68 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mon Coran Mot à Mot</title>
+    <title>Le Coran Mot à Mot</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f4f9; direction: ltr; padding: 20px; }
-        .container { max-width: 900px; margin: auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
-        h1 { text-align: center; color: #2c3e50; }
-        
-        /* Style des versets */
-        .verset { margin-bottom: 40px; display: flex; flex-wrap: wrap; flex-direction: row-reverse; border-bottom: 1px solid #eee; padding-bottom: 20px; }
-        .verset-number { background: #2c3e50; color: white; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; margin-left: 10px; margin-top: 10px; }
-
-        /* Style du bloc Mot à Mot */
-        .mot-block { display: flex; flex-direction: column; align-items: center; margin: 10px; min-width: 60px; }
-        .arabe { font-size: 28px; font-family: 'Amiri', serif; color: #1a5d1a; margin-bottom: 5px; font-weight: bold; }
-        .francais { font-size: 14px; color: #666; text-align: center; font-style: italic; }
+        :root { --primary: #1a5d1a; --bg: #f4f7f6; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 20px; }
+        .container { max-width: 1100px; margin: auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
+        .header { text-align: center; border-bottom: 3px solid var(--primary); margin-bottom: 30px; padding-bottom: 20px; }
+        select { padding: 12px; font-size: 16px; border-radius: 8px; border: 1px solid #ccc; width: 100%; max-width: 400px; cursor: pointer; }
+        .verset { display: flex; flex-wrap: wrap; flex-direction: row-reverse; justify-content: flex-start; padding: 25px 10px; border-bottom: 1px solid #eee; transition: background 0.3s; }
+        .verset:hover { background: #fafafa; }
+        .v-num { background: var(--primary); color: white; width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; margin: 10px; order: 100; font-weight: bold; }
+        .mot-box { display: flex; flex-direction: column; align-items: center; margin: 10px; min-width: 60px; }
+        .ar { font-size: 32px; color: #222; font-weight: bold; margin-bottom: 8px; font-family: 'Amiri', serif; }
+        .fr { font-size: 15px; color: #666; font-style: italic; text-align: center; }
+        @media (max-width: 600px) { .ar { font-size: 24px; } .mot-box { min-width: 45px; } }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1 id="titre-sourate">Chargement...</h1>
-    <div id="coran-content"></div>
+    <div class="header">
+        <h1>📖 Coran Mot à Mot</h1>
+        <select id="selectSourate" onchange="chargerSourate(this.value)">
+            <!-- Généré par JS -->
+        </select>
+    </div>
+    <div id="contenu"></div>
 </div>
 
 <script>
-    // Ici, tu changes juste le nom du fichier pour charger une autre sourate
-    const fichierSourate = 'sourate_48.json'; 
+    const nomsSourates = ["Al-Fatiha","Al-Baqarah","Al-Imran","An-Nisa","Al-Ma'idah","Al-An'am","Al-A'raf","Al-Anfal","At-Tawbah","Yunus","Hud","Yusuf","Ar-Ra'd","Ibrahim","Al-Hijr","An-Nahl","Al-Isra","Al-Kahf","Maryam","Ta-Ha","Al-Anbiya","Al-Hajj","Al-Mu'minun","An-Nur","Al-Furqan","Ash-Shu'ara","An-Naml","Al-Qasas","Al-Ankabut","Ar-Rum","Luqman","As-Sajdah","Al-Ahzab","Saba","Fatir","Ya-Sin","As-Saffat","Sad","Az-Zumar","Ghafir","Fussilat","Ash-Shura","Az-Zukhruf","Ad-Dukhan","Al-Jathiyah","Al-Ahqaf","Muhammad","Al-Fath","Al-Hujurat","Qaf","Adh-Dhariyat","At-Tur","An-Najm","Al-Qamar","Ar-Rahman","Al-Waqi'ah","Al-Hadid","Al-Mujadilah","Al-Hashr","Al-Mumtahanah","As-Saff","Al-Jumu'ah","Al-Munafiqun","At-Taghabun","At-Talaq","At-Tahrim","Al-Mulk","Al-Qalam","Al-Haqqah","Al-Ma'arij","Nuh","Al-Jinn","Al-Muzzammil","Al-Muddatthir","Al-Qiyamah","Al-Insan","Al-Mursalat","An-Naba","An-Nazi'at","Abasa","At-Takwir","Al-Infitar","Al-Mutaffifin","Al-Inshiqaq","Al-Buruj","At-Tariq","Al-A'la","Al-Ghashiyah","Al-Fajr","Al-Balad","Ash-Shams","Al-Layl","Ad-Duha","Ash-Sharh","At-Tin","Al-Alaq","Al-Qadr","Al-Bayyinah","Az-Zalzalah","Al-Adiyat","Al-Qari'ah","At-Takathur","Al-Asr","Al-Humazah","Al-Fil","Quraysh","Al-Ma'un","Al-Kawthar","Al-Kafirun","An-Nasr","Al-Masad","Al-Ikhlas","Al-Falaq","An-Nas"];
 
-    async function chargerSourate() {
+    const select = document.getElementById('selectSourate');
+    nomsSourates.forEach((nom, i) => {
+        let opt = document.createElement('option');
+        opt.value = (i + 1);
+        opt.innerHTML = `Sourate ${i + 1} : ${nom}`;
+        select.appendChild(opt);
+    });
+
+    async function chargerSourate(num) {
+        const divContenu = document.getElementById('contenu');
+        divContenu.innerHTML = "<p style='text-align:center'>Chargement de la sourate...</p>";
         try {
-            // Remarque : Pour tester en local, il faut un serveur (ou mettre le JSON directement dans une variable)
-            const response = await fetch(fichierSourate);
+            const response = await fetch(`${num}.json`);
+            if (!response.ok) throw new Error();
             const data = await response.json();
-
-            document.getElementById('titre-sourate').innerText = "Sourate " + data.numero + " : " + data.nom;
-            
             let html = "";
-            data.versets.forEach(verset => {
-                html += `<div class="verset">`;
-                html += `<div class="verset-number">${verset.id}</div>`;
-                
-                verset.mots.forEach(mot => {
-                    html += `
-                        <div class="mot-block">
-                            <div class="arabe">${mot.ar}</div>
-                            <div class="francais">${mot.fr}</div>
-                        </div>`;
+            data.versets.forEach(v => {
+                html += `<div class="verset"><div class="v-num">${v.id}</div>`;
+                v.mots.forEach(m => {
+                    html += `<div class="mot-box"><span class="ar">${m.ar}</span><span class="fr">${m.fr}</span></div>`;
                 });
-                
                 html += `</div>`;
             });
-
-            document.getElementById('coran-content').innerHTML = html;
-        } catch (error) {
-            console.error("Erreur de chargement:", error);
-            document.getElementById('titre-sourate').innerText = "Erreur de chargement du fichier JSON";
+            divContenu.innerHTML = html;
+        } catch (e) {
+            divContenu.innerHTML = `<p style='color:red; text-align:center'>Le fichier <b>${num}.json</b> n'a pas encore été ajouté.</p>`;
         }
     }
 
-    chargerSourate();
+    // Charger la sourate 1 par défaut
+    chargerSourate(1);
 </script>
-
 </body>
 </html>
